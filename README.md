@@ -1,4 +1,4 @@
-# Ozinshe---film-streaming-platform-
+# Ozinshe 
 
 Ozinshe
 A personal online platform that provides information about movies. The system allows users to rate movies, mark movies as watched, and create a viewing queue.
