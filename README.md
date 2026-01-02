@@ -15,4 +15,3 @@ Non-functional requirements
 Availability of a documented API according to the OpenAPI specification.
 Ability to containerize the application in Docker.
 
-Translated with DeepL.com (free version)
