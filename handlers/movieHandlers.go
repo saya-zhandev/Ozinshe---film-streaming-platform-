@@ -1,19 +1,24 @@
 package handlers
 
 import (
+	"Ozinshe---film-streaming-platform-/models"
 	"net/http"
+
 	"strconv"
+
 	"github.com/gin-gonic/gin"
-	"github.com/saya-zhandev/Ozinshe---film-streaming-platform-/models"
+	// "github.com/saya-zhandev/Ozinshe---film-streaming-platform-/models"
 )
 
 type MovieHandlers struct {
-	db map[int]*models.Movie
+	db map[int]models.Movie //creates the dictionary of movies: integer to the field of info in the struct
 }
 
 func NewMovieHandlers() *MovieHandlers {
 	return &MovieHandlers{
-		db: make(map[int]*models.Movie),{
+		db: map[int]models.Movie{
+			//initial ize the db - important before use
+
 			1: {
 				Id:          1,
 				Title:       "1+1",
@@ -24,7 +29,7 @@ func NewMovieHandlers() *MovieHandlers {
 				IsWatched:   false,
 				TrailerUrl:  "https://www.youtube.com/watch?v=m95M-I7Ij0o&ab_channel=%D0%9A%D0%B8%D0%BD%D0%BE%D0%92%D0%B8%D1%85%D1%80%D1%8C",
 				PosterUrl:   "",
-				Genres:      make([]models.Genre, 0),
+				Genres:      make([]string, 0),
 			},
 			2: {
 				Id:          2,
@@ -36,7 +41,7 @@ func NewMovieHandlers() *MovieHandlers {
 				IsWatched:   false,
 				TrailerUrl:  "https://www.youtube.com/watch?v=6ybBuTETr3U",
 				PosterUrl:   "",
-				Genres:      make([]models.Genre, 0),
+				Genres:      make([]string, 0),
 			},
 			3: {
 				Id:          3,
@@ -48,7 +53,7 @@ func NewMovieHandlers() *MovieHandlers {
 				IsWatched:   false,
 				TrailerUrl:  "https://www.youtube.com/watch?v=kgAeKpAPOYk&ab_channel=%D0%A2%D1%80%D0%B5%D0%B9%D0%BB%D0%B5%D1%80%D1%8B%D0%BA%D1%84%D0%B8%D0%BB%D1%8C%D0%BC%D0%B0%D0%BC",
 				PosterUrl:   "",
-				Genres:      make([]models.Genre, 0),
+				Genres:      make([]string, 0),
 			},
 			4: {
 				Id:          4,
@@ -60,7 +65,7 @@ func NewMovieHandlers() *MovieHandlers {
 				IsWatched:   false,
 				TrailerUrl:  "https://www.youtube.com/watch?v=C7-7qQ61QHU&ab_channel=%D0%A2%D1%80%D0%B5%D0%B9%D0%BB%D0%B5%D1%80%D1%8B%D0%BA%D1%84%D0%B8%D0%BB%D1%8C%D0%BC%D0%B0%D0%BC",
 				PosterUrl:   "",
-				Genres:      make([]models.Genre, 0),
+				Genres:      make([]string, 0),
 			},
 			5: {
 				Id:          5,
@@ -72,39 +77,39 @@ func NewMovieHandlers() *MovieHandlers {
 				IsWatched:   false,
 				TrailerUrl:  "https://www.youtube.com/watch?v=_l7R9Rz5URw&ab_channel=%D0%A2%D1%80%D0%B5%D0%B9%D0%BB%D0%B5%D1%80%D1%8B%D0%BA%D1%84%D0%B8%D0%BB%D1%8C%D0%BC%D0%B0%D0%BC",
 				PosterUrl:   "",
-				Genres:      make([]models.Genre, 0),
+				Genres:      make([]string, 0),
 			},
-		}
+		},
 	}
 }
 
-func (h *MoviesHandler) FindById(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.Atoi(idStr)
+func (h *MovieHandlers) FindById(c *gin.Context) {
+	idStr := c.Param("id") // parameter functions from the gin context
+	id, err := strconv.Atoi(idStr) //converting the id string to the integer 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, models.NewApiError("Invalid Movie Id"))
-		return
-	}
+		return //if the id is not valid case
+	}	
 
 	originalMovie, ok := h.db[id]
 	if !ok {
 		c.JSON(http.StatusBadRequest, models.NewApiError("Movie not found"))
 		return
-	}
+	}//checking whether the movie id is in the database
 
-	c.JSON(http.StatusOK, originalMovie)
+	c.JSON(http.StatusOK, originalMovie)//returning the status ok with the movie name
 }
 
-func (h *MoviesHandler) FindAll(c *gin.Context) {
-	movies := make([]models.Movie, 0, len(h.db))
-	for _, v := range h.db {
+func (h *MovieHandlers) FindAll(c *gin.Context) {
+	movies := make([]models.Movie, 0, len(h.db)) //make slice with the length of the database
+	for _, v := range h.db {                     //gets the value, ignoring the id, and loops through all elements in the database
 		movies = append(movies, v)
 	}
 
 	c.JSON(http.StatusOK, movies)
 }
 
-func (h *MoviesHandler) Create(c *gin.Context) {
+func (h *MovieHandlers) Create(c *gin.Context) {
 	var m models.Movie
 
 	err := c.BindJSON(&m)
@@ -113,34 +118,34 @@ func (h *MoviesHandler) Create(c *gin.Context) {
 		return
 	}
 
-	id := len(h.db) + 1
+	id := len(h.db) + 1 //generate the id for each of the new movie
 
-	m.Id = id
-	m.Genres = make([]models.Genre, 0)
+	m.Id = id                    //assign the id to the m variable
+	m.Genres = make([]string, 0) //initializes the slice with empty value to actually present and save it there as values
 
-	h.db[id] = m
+	h.db[id] = m //saving up the value to the movie
 
 	c.JSON(http.StatusOK, gin.H{
 		"id": id,
 	})
 }
 
-func (h *MoviesHandler) Update(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.Atoi(idStr)
+func (h *MovieHandlers) Update(c *gin.Context) { //creating the function for the updating the films
+	idStr := c.Param("id")         //c.param is the gin method for getting the parameter from the url - built in function
+	id, err := strconv.Atoi(idStr) //converting the id string to the integer
 	if err != nil {
-		c.JSON(http.StatusBadRequest, models.NewApiError("Invalid Movie Id"))
+		c.JSON(http.StatusBadRequest, models.NewApiError("Invalid Movie Id")) //when the id is not valid and can't be converted to int
 		return
 	}
 
-	originalMovie, ok := h.db[id]
+	originalMovie, ok := h.db[id] //checks if the movie with the id exists in the DATABASE, h.db is the map structure, original movie (the movie itself) and ok is the boolean
 	if !ok {
 		c.JSON(http.StatusBadRequest, models.NewApiError("Movie not found"))
 		return
 	}
 
-	var updatedMovie models.Movie
-	err = c.BindJSON(&updatedMovie)
+	var updatedMovie models.Movie   //created the variable for the updated movie, as a NEW request from the CLIENT
+	err = c.BindJSON(&updatedMovie) //getting the json data for the updated movie
 	if err != nil {
 		c.JSON(http.StatusBadRequest, models.NewApiError("Could not bind json"))
 		return
@@ -151,15 +156,15 @@ func (h *MoviesHandler) Update(c *gin.Context) {
 	originalMovie.ReleaseYear = updatedMovie.ReleaseYear
 	originalMovie.Director = updatedMovie.Director
 	originalMovie.Rating = updatedMovie.Rating
-	originalMovie.IsWatched = updatedMovie.IsWatched
-	originalMovie.TrailerUrl = updatedMovie.TrailerUrl
+	// originalMovie.IsWatched = updatedMovie.IsWatched
+	// originalMovie.TrailerUrl = updatedMovie.TrailerUrl
 
-	h.db[id] = originalMovie
-
+	h.db[id] = originalMovie //saving the updated movie to the db with the new values
+	//originalMovie apparently contains both of the new and old info so we have to save it back once more to the db
 	c.Status(http.StatusOK)
 }
 
-func (h *MoviesHandler) Delete(c *gin.Context) {
+func (h *MovieHandlers) Delete(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -171,4 +176,3 @@ func (h *MoviesHandler) Delete(c *gin.Context) {
 
 	c.Status(http.StatusOK)
 }
-
